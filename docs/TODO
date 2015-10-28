@@ -1,48 +1,8 @@
-boost:
-	report the bug with boost regex and
-		!push/annoying/^((.)(.)((?1)|)).*?$/\U\2\L\3\4
-
-pbrane
-	include the topic in lastLog
-	rate limit
-	handle ACTIONs better
-
-General
-	non-hard coded configuration
-	dynamic nick changing
-
-Modules
-	!s: accept quoted arguments, have mechanism for going back further than
-		last match
-	Add GABEN mode
-	say goodnight to people
-	say hello to people
-	fix .* matching twice while .+ works properly
-	play wit PkgnBotX
-	prevent bot fights better
-	!botsnack
-	bonzairob: add !teatime
-
-Requests:
-	Cacapulse: !gaga
-	randomly yell <USERNAME> IS A SPY after <user> posts (5% chance)
-	ZeldaFan: insult people on leaving channel
-	Solshine: command 'recharge' time to prevent command spam automatically
-	jac: when ^ is implemented, stroke Solshine's ego
-
-
 Allow function to specify whether we should direct it at a person, instead of
 doing line.nick + ": " manually. This also fixes the private message thing.
 
 
 overhaul help system, it sucks
-
-
-
-markov probability
-	smooth
-	rough
-	normalize
 
 
 !in triggers
