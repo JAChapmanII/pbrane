@@ -11,7 +11,7 @@ CXXFLAGS=-std=c++14
 
 default: libpbrane.so
 
-libpbrane.so: ${LSRC}
+libpbrane.so: ${LSRC} ${PDIR}/modules/math.cpp
 	${CXX} ${CXXFLAGS} -shared -fPIC $^ -o $@
 
 # TODO: this is incomplete, just as a template for inclusion higher up

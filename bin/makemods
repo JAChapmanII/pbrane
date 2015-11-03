@@ -12,7 +12,7 @@ echo -e "template<typename Context>" >> mfuncs
 echo -e "void modules::setupFunctions(Context *context) {" >> mfuncs
 echo -e "\tstd::cerr << \"discovered functions: \" << std::endl;" >> mfuncs;
 
-for f in modules/*.hpp; do
+for f in /usr/include/pbrane/modules/*.hpp modules/*.hpp; do
 	module=$(grep '^// #m: ' "$f" | cut -d':' -f2-)
 	mname=$(echo $(echo $module | cut -d':' -f1))
 	mdesc=$(echo $(echo $module | cut -d':' -f2))
@@ -20,7 +20,7 @@ for f in modules/*.hpp; do
 	echo ""
 	echo "============== $mname: $mdesc"
 
-	echo -e "#include \"$(basename "$f")\"" >> mincs
+	echo -e "#include \"$(readlink -f "$f")\"" >> mincs
 	# save the module definition data to a file
 	echo -e "\tModule $mname = { \"$mname\", \"$mdesc\", false };" >> mods
 	echo -e "\tmodules::modules.push_back($mname);" >> mods

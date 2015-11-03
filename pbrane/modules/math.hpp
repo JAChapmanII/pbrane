@@ -1,7 +1,7 @@
 #ifndef MODULES_MATH_HPP
 #define MODULES_MATH_HPP
 
-#include "variable.hpp"
+#include "pbrane/variable.hpp"
 
 // #m: math: math functions
 
