@@ -33,6 +33,7 @@ class Variable {
 		Variable asFunction() const;
 
 		std::string toString() const;
+		explicit operator std::string() const;
 
 		Variable operator+(const Variable &rhs) const;
 		Variable operator*(const Variable &rhs) const;
@@ -73,5 +74,7 @@ class Variable {
 };
 
 std::vector<std::string> makeList(std::string lists);
+
+std::string operator+(const std::string &lhs, const Variable &rhs);
 
 #endif // VARIABLE_HPP

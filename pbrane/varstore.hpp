@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 #include <set>
-#include "db.hpp"
+#include "sekisa/db.hpp"
 #include "variable.hpp"
 #include "permission.hpp"
 

@@ -13,7 +13,7 @@ using std::numeric_limits;
 
 #include <cmath>
 
-#include "util.hpp"
+#include "sekisa/util.hpp"
 using util::split;
 using util::trimWhitespace;
 using util::fromString;
@@ -109,6 +109,7 @@ Variable Variable::asFunction() const {
 }
 
 string Variable::toString() const { return this->value; }
+Variable::operator std::string() const { return this->value; }
 
 bool Variable::areOf(const Variable &v1, const Variable &v2, Type t1, Type t2) {
 	if(v1.type == t1 && v2.type == t2)
@@ -338,5 +339,9 @@ Variable Variable::parse(const string &rhs) {
 	if(!notDouble)
 		return Variable(fromString<double>(rhs));
 	return Variable(rhs);
+}
+
+string operator+(const string &lhs, const Variable &rhs) {
+	return lhs + rhs.toString();
 }
 

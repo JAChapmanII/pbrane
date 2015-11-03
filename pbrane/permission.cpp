@@ -8,7 +8,7 @@ using std::vector;
 #include <algorithm>
 using std::transform;
 
-#include "util.hpp"
+#include "sekisa/util.hpp"
 using util::split;
 using util::trimWhitespace;
 using util::contains;

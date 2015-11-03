@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include "sekisa/clock.hpp"
 #include "variable.hpp"
 #include "pvm.hpp"
-#include "clock.hpp"
 
 enum class ExceptionType { None, StackOverflow, FunctionDoesNotExist, Other };
 

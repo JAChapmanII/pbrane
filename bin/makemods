@@ -1,15 +1,16 @@
 #!/bin/bash
 
-OUTF="./lib/modules.cpp.gen"
+OUTF="$1"
 
 :> mincs
 :> mods
 :> mfuncs
 
-echo -e "void defineModules() {" >> mods
+echo -e "void modules::defineModules() {" >> mods
 
-echo -e "void setupFunctions(Bot *bot) {" >> mfuncs
-echo -e "\tcerr << \"discovered functions: \" << endl;" >> mfuncs;
+echo -e "template<typename Context>" >> mfuncs
+echo -e "void modules::setupFunctions(Context *context) {" >> mfuncs
+echo -e "\tstd::cerr << \"discovered functions: \" << std::endl;" >> mfuncs;
 
 for f in modules/*.hpp; do
 	module=$(grep '^// #m: ' "$f" | cut -d':' -f2-)
@@ -27,7 +28,7 @@ for f in modules/*.hpp; do
 	# add module function header to file
 	echo -e "" >> mfuncs;
 	echo -e "\t// functions from $mname" >> mfuncs
-	echo -e "\tcerr <<  \"    [$mname]: \";" >> mfuncs
+	echo -e "\tstd::cerr <<  \"    [$mname]: \";" >> mfuncs
 	grep '^// #f: ' "$f" | cut -d':' -f2- | while read -r function; do
 		fname=$(echo $(echo $function | cut -d':' -f1))
 		pfname="$fname"
@@ -39,16 +40,15 @@ for f in modules/*.hpp; do
 		printf "%14s: %s\n" "$pfname" "$fdesc"
 
 		# save the function information to a file
-		echo -e "\tcerr << \"$pfname \";" >> mfuncs;
-		echo -e "\tmodules::hfmap[\"$pfname\"] = modules::make_wrapper(bot, $fname);" >> mfuncs
-		echo -e "\tbot->vars.set(\"${pfname}\", \"{ hard coded }\");" >> mfuncs
-		echo -e "\tbot->vars.set(\"${pfname}.help\", \"$fdesc\");" >> mfuncs
-		echo -e "\tglobal::moduleFunctionList.push_back(\"${pfname}\");" >> mfuncs
+		echo -e "\tstd::cerr << \"$pfname \";" >> mfuncs;
+		echo -e "\tmodules::hfmap[\"$pfname\"] = modules::make_wrapper(context, $fname);" >> mfuncs
+		echo -e "\tcontext->vars.set(\"${pfname}\", \"{ hard coded }\");" >> mfuncs
+		echo -e "\tcontext->vars.set(\"${pfname}.help\", \"$fdesc\");" >> mfuncs
 		# TODO: setup permissions?
 	done
-	echo -e "\tcerr << endl;" >> mfuncs
+	echo -e "\tstd::cerr << std::endl;" >> mfuncs
 done
-echo -e "\tcerr << endl;" >> mfuncs
+echo -e "\tstd::cerr << std::endl;" >> mfuncs
 
 echo "}" | tee -a mods mfuncs >/dev/null
 

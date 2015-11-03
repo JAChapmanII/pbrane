@@ -10,7 +10,7 @@ using std::set_difference;
 #include <iterator>
 using std::inserter;
 
-#include "err.hpp"
+#include "sekisa/err.hpp"
 
 #include <iostream>
 using std::cerr;

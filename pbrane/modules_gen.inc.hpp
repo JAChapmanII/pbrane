@@ -1,5 +1,6 @@
-#include "err.hpp"
-#include "util.hpp"
+#include "sekisa/err.hpp"
+#include "sekisa/util.hpp"
+#include <iostream>
 
 namespace modules {
 	namespace IFHelper {
@@ -29,18 +30,56 @@ namespace modules {
 		template<typename Arg> Arg coerce(std::vector<Variable> &vars) {
 			throw make_except("unexpected coerce type");
 		}
-		template<> std::string coerce(std::vector<Variable> &vars);
-		template<> Word coerce(std::vector<Variable> &vars);
-		template<> long coerce(std::vector<Variable> &vars);
-		template<> double coerce(std::vector<Variable> &vars);
-		template<> std::vector<Variable> coerce(std::vector<Variable> &vars);
-		template<> Variable coerce(std::vector<Variable> &vars);
+		template<> std::string coerce(std::vector<Variable> &vars) {
+			//if(vars.empty())
+				//throw std::string{"coerce: wanted std::string but has nothing"};
+			auto res = util::join(vars, " ");
+			vars.clear();
+			return res;
+		}
+		template<> Word coerce(std::vector<Variable> &vars) {
+			if(vars.empty())
+				throw std::string{"coerce: wanted word but has nothing"};
+			auto res = vars.front().toString();
+			vars.erase(vars.begin());
+			return Word{res.begin(), res.end()};
+		}
+		template<> long coerce(std::vector<Variable> &vars) {
+			if(vars.empty())
+				throw std::string{"coerce: wanted int but has nothing"};
+			long var = (long)vars.front().asNumber().toNumber();
+			vars.erase(vars.begin());
+			return var;
+		}
+		template<> double coerce(std::vector<Variable> &vars) {
+			if(vars.empty())
+				throw std::string{"coerce: wanted int but has nothing"};
+			double var = (double)vars.front().asNumber().toNumber();
+			vars.erase(vars.begin());
+			return var;
+		}
+		template<> std::vector<Variable> coerce(std::vector<Variable> &vars) {
+			auto copy = vars;
+			vars.clear();
+			return copy;
+		}
+		template<> Variable coerce(std::vector<Variable> &vars) {
+			if(vars.empty())
+				throw std::string{"coerce: wanted Variable but has nothing"};
+			Variable var = vars.front();
+			vars.erase(vars.begin());
+			return var;
+		}
 
 		template<typename Ret> Variable makeVariable(Ret ret) {
 			return Variable(ret);
 		}
-		template<> Variable makeVariable(sqlite_int64 var);
-		template<> Variable makeVariable(Variable var);
+		template<> Variable makeVariable(Variable var) { return var; }
+		template<> Variable makeVariable(sqlite_int64 var) {
+			// TODO: this is terrible
+			return Variable((long int)var);
+		}
+
 
 		template<typename F>
 				decltype(auto) if_bind(F func, std::vector<Variable> &pargs) {
@@ -84,15 +123,38 @@ namespace modules {
 		return IFHelper::makeVariable("");
 	}
 
-	template<typename Ret, typename... Args> IFWrapper<Ret, Args...>
-			make_wrapper(Bot *, Ret (*func)(Args...)) {
+	template<typename Context, typename Ret, typename... Args> IFWrapper<Ret, Args...>
+			make_wrapper(Context *, Ret (*func)(Args...)) {
 		return IFWrapper<Ret, Args...>{func};
 	}
-	template<typename Ret, typename... Args> IFWrapper<Ret, Args...>
-			make_wrapper(Bot *bot, Ret (*func)(Bot *, Args...)) {
+	template<typename Context, typename Ret, typename... Args> IFWrapper<Ret, Args...>
+			make_wrapper(Context *ctx, Ret (*func)(Context *, Args...)) {
 		auto binder = IFHelper::ArityBinder<sizeof...(Args) + 1>{};
-		auto fNext = binder(func, bot);
+		auto fNext = binder(func, ctx);
 		return IFWrapper<Ret, Args...>{fNext};
 	}
+
+	static bool modules_inited{false};
+
+	void defineModules();
+	template<typename Context> void setupFunctions(Context *context);
+
+	template<typename Context>
+	bool init(Context *context) {
+		if(modules_inited)
+			return true;
+
+		std::cerr << "moudles::init: " << std::endl;
+		defineModules();
+
+		// TODO: this is clearly an abuse of context
+		std::cerr << "    dictionary size: " << context->dictionary.size() << std::endl;
+
+		setupFunctions(context);
+		return true;
+	}
 }
+
+// this is not jank, I swear!
+#include "modules.cpp.gen"
 
