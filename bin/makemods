@@ -9,7 +9,7 @@ OUTF="$1"
 echo -e "void modules::defineModules() {" >> mods
 
 echo -e "template<typename Context>" >> mfuncs
-echo -e "void modules::setupFunctions(Context *context) {" >> mfuncs
+echo -e "void modules::setupFunctions(Context *context__) {" >> mfuncs
 echo -e "\tstd::cerr << \"discovered functions: \" << std::endl;" >> mfuncs;
 
 for f in /usr/include/pbrane/modules/*.hpp modules/*.hpp; do
@@ -41,9 +41,9 @@ for f in /usr/include/pbrane/modules/*.hpp modules/*.hpp; do
 
 		# save the function information to a file
 		echo -e "\tstd::cerr << \"$pfname \";" >> mfuncs;
-		echo -e "\tmodules::hfmap[\"$pfname\"] = modules::make_wrapper(context, $fname);" >> mfuncs
-		echo -e "\tcontext->vars.set(\"${pfname}\", \"{ hard coded }\");" >> mfuncs
-		echo -e "\tcontext->vars.set(\"${pfname}.help\", \"$fdesc\");" >> mfuncs
+		echo -e "\tmodules::hfmap[\"$pfname\"] = modules::make_wrapper(context__, $fname);" >> mfuncs
+		echo -e "\tcontext__->vars.set(\"${pfname}\", \"{ hard coded }\");" >> mfuncs
+		echo -e "\tcontext__->vars.set(\"${pfname}.help\", \"$fdesc\");" >> mfuncs
 		# TODO: setup permissions?
 	done
 	echo -e "\tstd::cerr << std::endl;" >> mfuncs
