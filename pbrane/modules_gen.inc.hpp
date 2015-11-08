@@ -147,9 +147,6 @@ namespace modules {
 		std::cerr << "moudles::init: " << std::endl;
 		defineModules();
 
-		// TODO: this is clearly an abuse of context
-		std::cerr << "    dictionary size: " << context->dictionary.size() << std::endl;
-
 		setupFunctions(context);
 		return true;
 	}
