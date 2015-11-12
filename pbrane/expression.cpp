@@ -1,8 +1,8 @@
 #include "expression.hpp"
 using std::vector;
 using std::string;
-using std::unique_ptr;
-using std::make_unique;
+using std::shared_ptr;
+using std::make_shared;
 using std::to_string;
 
 #include <map>
@@ -33,9 +33,9 @@ using std::endl;
 Expression::Expression(string itype, string itext) :
 		type(itype), text(itext) {
 }
-Expression::Expression(string itype, vector<unique_ptr<Expression>> &iargs) :
+Expression::Expression(string itype, vector<shared_ptr<Expression>> &iargs) :
 		type(itype) {
-	for(unique_ptr<Expression> &arg : iargs)
+	for(shared_ptr<Expression> &arg : iargs)
 		args.push_back(move(arg));
 	iargs.clear();
 }
@@ -99,7 +99,7 @@ string Expression::pretty(char ident, int count, int level) const {
 	res += type;
 	if(!text.empty())
 		res += " [" + text + "]";
-	for(const unique_ptr<Expression> &i : args)
+	for(const shared_ptr<Expression> &i : args)
 		if(!i)
 			res += "\n" + string(count * (level + 1), ident) + "null";
 		else
@@ -113,7 +113,7 @@ string Expression::prettyOneLine() const {
 	res += type;
 	if(!text.empty())
 		res += " [" + text + "]";
-	for(const unique_ptr<Expression> &i : args)
+	for(const shared_ptr<Expression> &i : args)
 		if(!i)
 			res += " (null)";
 		else
@@ -310,7 +310,7 @@ Variable Expression::evaluate(ExpressionContext &context) const {
 
 		if(vm.debugFunctionBodies)
 			cerr << "! body: " << body << endl;
-		ensurePermission(Permission::Execute, trace.owner, func);
+		// TODO ensurePermission(Permission::Execute, trace.owner, func);
 
 		// figure out the result of the arguments
 		vector<Variable> argVars;
@@ -445,7 +445,7 @@ Variable Expression::evaluate(ExpressionContext &context) const {
 				Expression opExpr(op);
 				// push back copies of the arguments
 				for(int i = 0; i < 2; ++i)
-					opExpr.args.push_back(make_unique<Expression>(*this->args[i].get()));
+					opExpr.args.push_back(make_shared<Expression>(*this->args[i].get()));
 
 				// TODO: add context frame?
 				auto result = opExpr.evaluate(context);
@@ -453,7 +453,7 @@ Variable Expression::evaluate(ExpressionContext &context) const {
 				// steal args from opExpr to avoid a copy, since we don't need opExpr
 				// anymore anyway
 				Expression assign("=", opExpr.args);
-				assign.args[1] = make_unique<Expression>("str", result.toString());
+				assign.args[1] = make_shared<Expression>("str", result.toString());
 				return assign.evaluate(context);
 			}
 		}

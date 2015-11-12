@@ -28,13 +28,13 @@ struct ParseException {
 };
 
 struct Parser {
-	static std::unique_ptr<Expression> parse(std::string str);
-	static std::unique_ptr<Expression> parseCanonical(std::string str);
+	static std::shared_ptr<Expression> parse(std::string str);
+	static std::shared_ptr<Expression> parseCanonical(std::string str);
 
 	Parser(std::string s) : _str(s), _len(_str.length()) { }
 
-	std::unique_ptr<Expression> parse();
-	std::unique_ptr<Expression> parseCanonical();
+	std::shared_ptr<Expression> parse();
+	std::shared_ptr<Expression> parseCanonical();
 
 	void ignoreWhiteSpace();
 	bool is(std::string needle) const;
@@ -46,24 +46,24 @@ struct Parser {
 		// returns the next chunk of characters until hitting whitespace note:
 		// if there is an ${} expr embedded in the chunk, it is folded into the
 		// output
-		std::unique_ptr<Expression> parseDefaultContextValue();
+		std::shared_ptr<Expression> parseDefaultContextValue();
 
-		std::unique_ptr<Expression> parseVariableName();
+		std::shared_ptr<Expression> parseVariableName();
 
 		// TODO: comment these
-		std::unique_ptr<Expression> parseExpression(int cLevel = 0);
-		std::unique_ptr<Expression> parseSingleExpression();
+		std::shared_ptr<Expression> parseExpression(int cLevel = 0);
+		std::shared_ptr<Expression> parseSingleExpression();
 		// parses !func arg1 arg2 arg3 etc...., use ${} to enter parseExpression
-		std::unique_ptr<Expression> parseDefaultContext();
-		std::unique_ptr<Expression> parseDefaultContextFunction();
+		std::shared_ptr<Expression> parseDefaultContext();
+		std::shared_ptr<Expression> parseDefaultContextFunction();
 
-		std::unique_ptr<Expression> parseFunctionCall();
-		std::unique_ptr<Expression> parseBinaryExpression(int prec = 0);
+		std::shared_ptr<Expression> parseFunctionCall();
+		std::shared_ptr<Expression> parseBinaryExpression(int prec = 0);
 
-		std::unique_ptr<Expression> parseNumber();
-		std::unique_ptr<Expression> parseString();
+		std::shared_ptr<Expression> parseNumber();
+		std::shared_ptr<Expression> parseString();
 
-		std::unique_ptr<Expression> parseVariableAccess();
+		std::shared_ptr<Expression> parseVariableAccess();
 
 		// returns the next string of consecutive digit characters
 		std::string grabNumber();
@@ -72,14 +72,14 @@ struct Parser {
 		int nextPrecedence();
 		bool leftAssociative(std::string op) const;
 		int precedence(std::string op) const;
-		std::unique_ptr<Expression> getBinaryOp();
+		std::shared_ptr<Expression> getBinaryOp();
 
 	private:
 		std::string _str;
 		size_t _idx{0}, _len{0};
 };
 
-std::unique_ptr<Expression> parse(std::string str);
+std::shared_ptr<Expression> parse(std::string str);
 
 
 #endif // PARSER_HPP

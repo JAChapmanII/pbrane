@@ -62,13 +62,13 @@ struct Expression {
 	 * otherwise, intepret
 	 */
 	std::string text{}; // if type == str
-	std::vector<std::unique_ptr<Expression>> args{};
+	std::vector<std::shared_ptr<Expression>> args{};
 
 	// construct expression without arguments
 	Expression(std::string itype, std::string itext = "");
 
 	// construct by stealing arguments from iargs
-	Expression(std::string itype, std::vector<std::unique_ptr<Expression>> &iargs);
+	Expression(std::string itype, std::vector<std::shared_ptr<Expression>> &iargs);
 
 	// copy constructor
 	Expression(const Expression &rhs);

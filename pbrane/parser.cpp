@@ -1,6 +1,6 @@
 #include "parser.hpp"
 using std::string;
-using std::unique_ptr;
+using std::shared_ptr;
 
 #include <map>
 using std::map;
@@ -44,16 +44,16 @@ using std::vector;
  * programming a lot better...
  */
 
-unique_ptr<Expression> Parser::parse(string str) {
+shared_ptr<Expression> Parser::parse(string str) {
 	Parser p(str);
 	return p.parse();
 }
-unique_ptr<Expression> Parser::parseCanonical(string str) {
+shared_ptr<Expression> Parser::parseCanonical(string str) {
 	Parser p(str);
 	return p.parseCanonical();
 }
 
-unique_ptr<Expression> parse(string str) {
+shared_ptr<Expression> parse(string str) {
 	return Parser::parse(str);
 }
 
@@ -80,10 +80,10 @@ static map<string, OpInfo> opMap = {
 #include <iostream>
 using std::cerr;
 using std::endl;
-unique_ptr<Expression> Parser::parse() {
+shared_ptr<Expression> Parser::parse() {
 	return parseDefaultContext();
 }
-unique_ptr<Expression> Parser::parseCanonical() {
+shared_ptr<Expression> Parser::parseCanonical() {
 	return parseExpression();
 }
 
@@ -106,10 +106,10 @@ bool Parser::atEnd() const {
 	return _len == _idx;
 }
 
-unique_ptr<Expression> Parser::parseDefaultContextValue() {
+shared_ptr<Expression> Parser::parseDefaultContextValue() {
 	ignoreWhiteSpace();
 	string str;
-	vector<unique_ptr<Expression>> args;
+	vector<shared_ptr<Expression>> args;
 	for(; !atEnd() && !isspace(_str[_idx]);) {
 		if(is("${")) {
 			if(!str.empty())
@@ -131,13 +131,13 @@ unique_ptr<Expression> Parser::parseDefaultContextValue() {
 		return move(args[0]);
 
 	// compound string (may be multi-expressioned...)
-	return unique_ptr<Expression>(new Expression("strcat", args));
+	return shared_ptr<Expression>(new Expression("strcat", args));
 }
-unique_ptr<Expression> Parser::parseVariableName() {
+shared_ptr<Expression> Parser::parseVariableName() {
 	// TODO: basically dupe of above
 	ignoreWhiteSpace();
 	string str;
-	vector<unique_ptr<Expression>> args;
+	vector<shared_ptr<Expression>> args;
 	// TODO: better way to decide end points?
 	for(; !atEnd() && (_str[_idx] == '$' || _str[_idx] == '.' || isalnum(_str[_idx]));) {
 		if(is("${")) {
@@ -163,10 +163,10 @@ unique_ptr<Expression> Parser::parseVariableName() {
 		return move(args[0]);
 
 	// compound string (may be multi-expressioned...)
-	return unique_ptr<Expression>(new Expression("strcat", args));
+	return shared_ptr<Expression>(new Expression("strcat", args));
 }
 
-unique_ptr<Expression> Parser::parseDefaultContext() {
+shared_ptr<Expression> Parser::parseDefaultContext() {
 	ignoreWhiteSpace();
 	switch(_str[_idx]) {
 		case '!':
@@ -183,36 +183,36 @@ unique_ptr<Expression> Parser::parseDefaultContext() {
 	except("encountered unexpected '" + string(1, _str[_idx]) + "'");
 	return nullptr;
 }
-unique_ptr<Expression> Parser::parseDefaultContextFunction() {
+shared_ptr<Expression> Parser::parseDefaultContextFunction() {
 	expect("!");
 	if(isspace(_str[_idx]))
 		except("unexpected space following ! call");
 
 	// function name comes first, but is also simply default context value
-	vector<unique_ptr<Expression>> args;
+	vector<shared_ptr<Expression>> args;
 	while(!atEnd())
 		args.push_back(parseDefaultContextValue());
 
 	if(args.empty())
 		except("expected function name after !");
 	// TODO: other context expects "var" not "str"
-	unique_ptr<Expression> fname = move(args[0]);
-	args[0] = unique_ptr<Expression>(new Expression("var"));
+	shared_ptr<Expression> fname = move(args[0]);
+	args[0] = shared_ptr<Expression>(new Expression("var"));
 	args[0]->args.push_back(move(fname));
 
-	return unique_ptr<Expression>(new Expression("!", args));
+	return shared_ptr<Expression>(new Expression("!", args));
 }
-unique_ptr<Expression> Parser::parseSingleExpression() {
+shared_ptr<Expression> Parser::parseSingleExpression() {
 	expect("${");
-	unique_ptr<Expression> res = parseExpression();
+	shared_ptr<Expression> res = parseExpression();
 	expect("}");
 	return res;
 }
-unique_ptr<Expression> Parser::parseExpression(int cLevel) {
+shared_ptr<Expression> Parser::parseExpression(int cLevel) {
 	ignoreWhiteSpace();
 	if(is(")") || is("}"))
 		return nullptr; // TODO?
-	unique_ptr<Expression> left{nullptr};
+	shared_ptr<Expression> left{nullptr};
 	if(is("${")) {
 		expect("${");
 		left.reset(new Expression("${}"));
@@ -240,7 +240,7 @@ unique_ptr<Expression> Parser::parseExpression(int cLevel) {
 
 	int nextPrec = nextPrecedence();
 	while(nextPrec >= cLevel) {
-		unique_ptr<Expression> op = getBinaryOp(),
+		shared_ptr<Expression> op = getBinaryOp(),
 			right = parseExpression(nextPrec +
 					(leftAssociative(op->type) ? 1 : 0));
 		if(!right && op->type != ";")
@@ -255,25 +255,25 @@ unique_ptr<Expression> Parser::parseExpression(int cLevel) {
 
 	return left;
 }
-unique_ptr<Expression> Parser::parseVariableAccess() {
+shared_ptr<Expression> Parser::parseVariableAccess() {
 	ignoreWhiteSpace();
 	// there's a level of indirection
 	if(is("*")) {
 		expect("*");
-		unique_ptr<Expression> va{new Expression("var")},
+		shared_ptr<Expression> va{new Expression("var")},
 			vname = parseVariableAccess();
 		va->args.push_back(move(vname));
 		return va;
 	}
-	unique_ptr<Expression> va{new Expression("var")},
+	shared_ptr<Expression> va{new Expression("var")},
 		vname = parseVariableName();
 	va->args.push_back(move(vname));
 	return va;
 }
-unique_ptr<Expression> Parser::parseFunctionCall() {
+shared_ptr<Expression> Parser::parseFunctionCall() {
 	expect("!");
 
-	vector<unique_ptr<Expression>> args;
+	vector<shared_ptr<Expression>> args;
 	args.push_back(parseVariableAccess());
 	// all args are expressions
 	// TODO: proper ending?
@@ -283,24 +283,24 @@ unique_ptr<Expression> Parser::parseFunctionCall() {
 	if(args.empty())
 		except("expected function name after !");
 
-	return unique_ptr<Expression>(new Expression("!", args));
+	return shared_ptr<Expression>(new Expression("!", args));
 }
 
-unique_ptr<Expression> Parser::parseString() {
+shared_ptr<Expression> Parser::parseString() {
 	ignoreWhiteSpace();
 	string delimiter(1, _str[_idx]);
 
 	expect(delimiter);
 
 	string str;
-	vector<unique_ptr<Expression>> args;
+	vector<shared_ptr<Expression>> args;
 	for(; !is(delimiter); ) {
 		if(atEnd())
 			except("expected string delimiter: " + delimiter);
 
 		if(is("${")) {
 			if(!str.empty())
-				args.push_back(unique_ptr<Expression>(new Expression("str", str)));
+				args.push_back(shared_ptr<Expression>(new Expression("str", str)));
 			str.clear();
 			args.push_back(parseExpression());
 		} else {
@@ -310,17 +310,17 @@ unique_ptr<Expression> Parser::parseString() {
 		}
 	}
 	if(!str.empty())
-		args.push_back(unique_ptr<Expression>(new Expression("str", str)));
+		args.push_back(shared_ptr<Expression>(new Expression("str", str)));
 	str.clear();
 
 	expect(delimiter);
 
 	// an empty string
 	if(args.empty())
-		return unique_ptr<Expression>(new Expression(delimiter, ""));
+		return shared_ptr<Expression>(new Expression(delimiter, ""));
 
 	// a complex string
-	return unique_ptr<Expression>(new Expression(delimiter, args));
+	return shared_ptr<Expression>(new Expression(delimiter, args));
 }
 
 string Parser::grabNumber() {
@@ -329,7 +329,7 @@ string Parser::grabNumber() {
 		num += _str[_idx++];
 	return num;
 }
-unique_ptr<Expression> Parser::parseNumber() {
+shared_ptr<Expression> Parser::parseNumber() {
 	ignoreWhiteSpace();
 	string num;
 	if(is("+")) {
@@ -346,7 +346,7 @@ unique_ptr<Expression> Parser::parseNumber() {
 		expect(".");
 		num += grabNumber();
 	}
-	return unique_ptr<Expression>(new Expression("num", num));
+	return shared_ptr<Expression>(new Expression("num", num));
 }
 // function calls should always work the same way? So you can't do
 // !func 5 + 5 7 * 7
@@ -372,13 +372,13 @@ int Parser::precedence(string op) const {
 int Parser::nextPrecedence() {
 	return precedence(nextOp());
 }
-unique_ptr<Expression> Parser::getBinaryOp() {
+shared_ptr<Expression> Parser::getBinaryOp() {
 	string op = nextOp();
 	if(op.empty())
 		except("expected binary operator");
 
 	expect(op);
-	return unique_ptr<Expression>(new Expression(op));
+	return shared_ptr<Expression>(new Expression(op));
 }
 
 
