@@ -66,10 +66,9 @@ string Expression::toString() const {
 		return res + this->type;
 	}
 	if(this->type == "!") {
-		string res = this->type + this->args[0]->toString();
-		for(int i = 1; i < (int)this->args.size(); ++i)
-			res += " " + this->args[i]->toString();
-		return res;
+		return this->type + util::join(this->args, " ", [](auto expr) {
+				return expr->toString();
+			});
 	}
 	if(this->type == "ind")
 		return "*" + this->args[0]->toString();
