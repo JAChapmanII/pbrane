@@ -138,8 +138,9 @@ shared_ptr<Expression> Parser::parseVariableName() {
 	ignoreWhiteSpace();
 	string str;
 	vector<shared_ptr<Expression>> args;
+	static string validCharSet = "_.$"; // plus alnum
 	// TODO: better way to decide end points?
-	for(; !atEnd() && (_str[_idx] == '$' || _str[_idx] == '.' || isalnum(_str[_idx]));) {
+	for(; !atEnd() && (isalnum(_str[_idx]) || validCharSet.find(_str[_idx]) != string::npos);) {
 		if(is("${")) {
 			if(!str.empty())
 				args.emplace_back(new Expression("str", str));
