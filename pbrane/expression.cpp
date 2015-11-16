@@ -191,6 +191,9 @@ Variable Expression::evaluate(Pvm &vm, string who) const {
 
 // TODO: better timing control
 // TODO: abort after Xms?
+
+// TODO: we can provide CPU time statistics with a perf context?
+// TODO: clock() easy to use, collate stats into timing map?
 Variable Expression::evaluate(ExpressionContext &context) const {
 	if(this == nullptr) // TODO: something probably went wrong.... empty expression?
 		context.except("this == nullptr");
@@ -280,6 +283,7 @@ Variable Expression::evaluate(ExpressionContext &context) const {
 	}
 
 	// function calls, special :D
+	// TODO: would be nice to have perf stats for all function calls
 	if(this->type == "!") {
 		// store $ variables incase they're clobbered
 		Variable oargs = vars.get("args");
