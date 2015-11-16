@@ -14,13 +14,8 @@ default: libpbrane.so
 libpbrane.so: ${LSRC} ${PDIR}/modules/math.cpp
 	${CXX} ${CXXFLAGS} -shared -fPIC $^ -o $@
 
-# TODO: this is incomplete, just as a template for inclusion higher up
-
-${LDIR}/modules.cpp.gen: ${MDIR}/*.hpp
-	${BDIR}/makemods
-${ODIR}/modules.o: ${LDIR}/modules.cpp ${LDIR}/modules.cpp.gen
-	${CXX} -c -o $@ $< ${CXXFLAGS}
+# see PINKSERV2 project for example of using library
 
 clean:
-	rm -rf ${ODIR}/*.o ${LDIR}/modules.cpp.gen
+	rm -rf libpbrane.so
 
